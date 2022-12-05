@@ -1,20 +1,62 @@
-const express = require('express')
+const { Router } = require('express')
+const router = Router();
 
-const {
-    addTest,
-    getTest,
-    getAllTests,
-    updateTest,
-    deleteTest
-} = require('../controllers/testController')
+const { db } = require('../firebase')
 
-const router = express.Router();
 
-router.post('/postTest', addTest);
-router.get('/getTests', getAllTests);
-router.get('/tests/:id', getTest);
-router.put('/tests/:id', updateTest);
-router.delete('/tests/:id', deleteTest);
+router.post('/postTest', async (req, res) => {
+    const { id, name, author } = req.body
+    await db.collection('tests').add({
+        id, name, author
+    })
+    res.redirect('/tests')
+});
+
+router.get('/tests', async (req, res) => {
+    try {
+        const result = await db.collection('tests').get()
+        const tests = result.docs.map((doc) => ({
+            unique: doc.id,
+            ...doc.data()
+        }))
+        console.log(tests)
+        res.redirect('/')
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+
+router.get('/tests/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const doc = await db.collection('tests').doc(id).get()
+        console.log(doc.data())
+        res.redirect('/')
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+
+router.get('/updateTest/:id', async (req, res) => {
+    try {
+        const { name, author } = req.body
+        await db.collection('tests').doc(req.params.id).update(
+            { name, author })
+
+        res.redirect('/tests')
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+
+router.get('/deleteTest/:id', async (req, res) => {
+    try {
+        await db.collection('tests').doc(req.params.id).delete()
+        res.redirect('/tests')
+    } catch (error) {
+        console.log(error.message)
+    }});
+
 
 module.exports = {
     routes: router

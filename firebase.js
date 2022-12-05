@@ -1,8 +1,16 @@
-const firebase = require('firebase/app')
-const firestore = require('firebase/firestore')
-const config = require('./config')
 
-const app = firebase.initializeApp(config.firebaseConfig)
-const db = firestore.getFirestore(app)
+const { initializeApp } = require("firebase-admin/app");
+const { credential } = require("firebase-admin");
+const firebaseAdmin = require('./secured/serviceAccountKey.json')
+const { getFirestore } = require('firebase-admin/firestore')
 
-module.exports = db
+initializeApp({
+    credential: credential.cert(firebaseAdmin),
+    databaseURL: "https://re-up-date-test-default-rtdb.europe-west1.firebasedatabase.app"
+})
+
+const db = getFirestore()
+
+module.exports = {
+    db
+}
