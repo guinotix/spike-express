@@ -8,17 +8,11 @@ const { auth } = require('../firebase')
 router.post('/signup', async (req, res) => {
     try {
         const { email, password } = req.body
-        const userRecord = await auth.createUser({
+        await auth.createUser({
             email: email,
             password: password
         })
-        const userDecoded = {
-            uid: userRecord.uid,
-            email: userRecord.email,
-            passwordEncrypted: userRecord.passwordHash
-        }
-        console.log(userDecoded)
-        res.redirect('/')
+        res.redirect('/auth/users')
     } catch (error) {
         console.log(error.message)
     }
@@ -31,7 +25,7 @@ router.get('/deleteUser/:uid', async (req, res) => {
         const uid = req.params.uid
         await auth.deleteUser(uid)
         console.log('User deleted')
-        res.redirect('/')
+        res.redirect('/auth/users')
     } catch (error) {
         console.log(error.message)
     }
@@ -47,13 +41,86 @@ router.get('/users', async (req, res) => {
             users.push({
                 uid: user.uid,
                 email: user.email,
-                passwordEncrypted: user.passwordHash
+                passwordEncrypted: user.passwordHash,
+                isDisabled: user.disabled
             })
         })
         users.forEach(user => {
             console.log(user)
         })
         res.redirect('/')
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+
+// Get a User by email
+router.get('/user', async (req, res) => {
+    try {
+        const { email } = req.body
+        const userRecord = await auth.getUserByEmail(email)
+        console.log({
+            uid: userRecord.uid,
+            email: userRecord.email,
+            isDisabled: userRecord.disabled
+        })
+        res.redirect('/')
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+
+// Get a User by UID
+router.get('/user/:uid', async (req, res) => {
+    try {
+        const uid = req.params.uid
+        const userRecord = await auth.getUser(uid)
+        console.log({
+            uid: userRecord.uid,
+            email: userRecord.email,
+            isDisabled: userRecord.disabled
+        })
+        res.redirect('/')
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+
+// Update Password
+router.get('/updatePassword/:uid', async (req, res) => {
+    try {
+        const uid = req.params.uid
+        const { password } = req.body
+        await auth.updateUser(uid, {
+            password: password
+        })
+        res.redirect('/auth/users')
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+
+// Activate or Deactivate an account
+router.get('/userActivation/:uid', async (req, res) => {
+    try {
+        const uid = req.params.uid
+        const userRecord = await auth.getUser(uid)
+        if (userRecord.disabled) {
+            // Activate
+            await auth.updateUser(uid, {
+                disabled: false
+            })
+        } else {
+            // Deactivate
+            await auth.updateUser(uid, {
+                disabled: true
+            })
+        }
+        res.redirect('/auth/users')
     } catch (error) {
         console.log(error.message)
     }
