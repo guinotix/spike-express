@@ -126,6 +126,87 @@ router.put('/desactivar/:usuario/:ubiid', async (req, res) => {
 })
 
 
+// QUERIES
+// Obtener ubicaciones que estén activas
+router.get('/activas/:usuario', async (req, res) => {
+    const user = req.params.usuario
+    const ubiUsuColRef = await db.collection('ubicaciones').doc(user).collection('ubicaciones')
+    const query = await ubiUsuColRef.where('disabled', '==', false)
+    const call = await query.get()
+    if (call.empty) {
+        res.send('No hay ubicaciones activas')
+    } else {
+        let array = []
+        call.forEach((doc) => {
+            const id = doc.id
+            const data = doc.data()
+            array.push({
+                id, data
+            })
+        })
+        res.send(array)
+    }
+})
+
+// Obtener ubicaciones que estén inactivas
+router.get('/inactivas/:usuario', async (req, res) => {
+    const user = req.params.usuario
+    const ubiUsuColRef = await db.collection('ubicaciones').doc(user).collection('ubicaciones')
+    const query = await ubiUsuColRef.where('disabled', '==', true)
+    const call = await query.get()
+    if (call.empty) {
+        res.send('No hay ubicaciones inactivas')
+    } else {
+        let array = []
+        call.forEach((doc) => {
+            const id = doc.id
+            const data = doc.data()
+            array.push({
+                id, data
+            })
+        })
+        res.send(array)
+    }
+})
+
+// Consultar info de todas las ubicaciones
+router.get('/consultaUbicaciones/:usuario', async (req, res) => {
+    const user = req.params.usuario
+    const ubiUsuColRef = await db.collection('ubicaciones').doc(user).collection('ubicaciones')
+    const call = await ubiUsuColRef.get()
+    if (call.empty) {
+        res.send('No hay ubicaciones')
+    } else {
+        let array = []
+        call.forEach((doc) => {
+            const id = doc.id
+            const data = doc.data()
+            array.push({
+                id, data
+            })
+        })
+        res.send(array)
+    }
+})
+
+// Consulta info de una ubicacion
+router.get('/consultaUna/:usuario/:ubiid', async (req, res) => {
+    const user = req.params.usuario
+    const ubiid = req.params.ubiid
+    const topRef = await db.collection('ubicaciones').doc(user).collection('ubicaciones').doc(ubiid)
+    const call = await topRef.get()
+    if (!call.exists) {
+        res.send('No existe la ubicacion')
+    } else {
+        const id = call.id
+        const data = call.data()
+        res.send({
+            id, data
+        })
+    }
+})
+
+
 module.exports = {
     routes: router
 }
