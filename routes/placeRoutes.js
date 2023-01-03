@@ -177,13 +177,29 @@ router.get('/consultaUbicaciones/:usuario', async (req, res) => {
     if (call.empty) {
         res.send('No hay ubicaciones')
     } else {
-        let array = []
+        let places = []
         call.forEach((doc) => {
-            const id = doc.id
+            const iden = doc.id
             const data = doc.data()
-            array.push({
-                id, data
+            places.push({
+                iden, data
             })
+        })
+        let services = []
+        for (const elem of places) {
+            const id = elem.iden
+            const servicesQuery = await ubiUsuColRef.doc(id).collection('servicios').get()
+            servicesQuery.forEach((serv) => {
+                const servID = serv.id
+                const servData = serv.data()
+                services.push({
+                    iden: id, service: { servID, servData }
+                })
+            })
+        }
+        let array = places.map((place) => {
+            const service = services.find((auxPlace) => auxPlace.iden === place.iden)
+            return { ...place, ...service }
         })
         res.send(array)
     }
@@ -198,11 +214,27 @@ router.get('/consultaUna/:usuario/:ubiid', async (req, res) => {
     if (!call.exists) {
         res.send('No existe la ubicacion')
     } else {
-        const id = call.id
-        const data = call.data()
-        res.send({
-            id, data
+        let place = [{ id: call.id, data: call.data() }]
+        let services = []
+        const servicesQuery = await db.collection('ubicaciones').doc(user).collection('ubicaciones').doc(ubiid).collection('servicios').get()
+        servicesQuery.forEach((serv) => {
+            services.push({
+                id: call.id, service: { id: serv.id, data: serv.data() }
+            })
         })
+        let array = place.reduce((combined, obj1) => {
+            const filtered = services.filter((obj) => obj.id === obj1.id)
+            let merged = { ...obj1 }
+            let placeServices = []
+            filtered.forEach((obj2) => {
+                if (obj2.service) {
+                    placeServices.push(obj2.service)
+                }
+            })
+            merged.services = placeServices
+            return merged
+        }, {})
+        res.send(array)
     }
 })
 
