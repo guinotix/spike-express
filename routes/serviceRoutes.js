@@ -99,30 +99,51 @@ router.put('/:servid', async (req, res) => {
 router.put('/:usu/:tipo', async (req, res) => {
     const user = req.params.usu
     const tipo = req.params.tipo
+    const docRef = await db
+        .collection('col4-serviciosLocalesUsuarios')
+        .doc(user)
+    const call = await docRef.get()
+    const current = call.get(`${tipo}`)
+    const newValue = !current
+    if (tipo === 'eventos') {
+        await docRef.update({
+            eventos: newValue
+        })
+    }
+    else if (tipo === 'noticias') {
+        await docRef.update({
+            noticias: newValue
+        })
+    }
+    else if (tipo === 'tiempo') {
+        await docRef.update({
+            tiempo: newValue
+        })
+    }
+    await actualizarServiciosUsuario(user, tipo)
+    res.send('Cambios selector API hechos')
+})
+
+const actualizarServiciosUsuario = async (usuario, tipo) => {
     const colRef = await db.collection('col2-servicios')
     const query = await colRef
-        .where('usuario', '==', user)
+        .where('usuario', '==', usuario)
         .where('tipo_servicio', '==', tipo)
     const call = await query.get()
-    if (call.empty) {
-        res.send('Error al activar/desactivar servicio')
-    } else {
-        let servicios = []
-        call.forEach((doc) => {
-            const id = doc.id
-            const data = doc.data()
-            servicios.push({ id, data })
+    let servicios = []
+    call.forEach((doc) => {
+        const id = doc.id
+        const data = doc.data()
+        servicios.push({ id, data })
+    })
+    for (let elem of servicios) {
+        const current = elem.data.disabled
+        const newValue = !current
+        await colRef.doc(elem.id).update({
+            disabled: newValue
         })
-        for (let elem of servicios) {
-            const current = elem.data.disabled
-            const newValue = !current
-            await colRef.doc(elem.id).update({
-                disabled: newValue
-            })
-        }
-        res.send('Actualizaciones de los servicios hechos')
     }
-})
+}
 
 
 module.exports = {
