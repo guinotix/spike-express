@@ -1,0 +1,56 @@
+Initial state
+- servicios globales creados
+
+
+Crear un usuario
+    1. Añadir el usuario a la autenticación
+    2. Crear los servicios locales del usuario
+        Crear un doc en servicio local de ${usuario}
+        Por cada servicio global,
+            Crear un field inicializado a true
+
+Borrar un usuario
+    1. Borrar los servicios del usuario == ${usuario}
+    2. Borrar las ubicaciones del usuario == ${usuario}
+    3. Borrar doc ${usuario} de servicios locales
+
+Alta ubicacion (ya sea por toponimo o coordenadas)
+    1. Añadir la ubicacion a su colección correspondiente
+    2. Por cada servicio local:
+        Crear un servicio asociado en colección servicios con ${usuario}-${ubicacion}-${tipo_servicio}
+        Inicializar disabled (la inversa del valor en servicioLocal)
+
+Baja ubicacion (eliminarla)
+    1. Borrar la ubicacion
+    2. Borrar los servicios cuyo id_ubicacion == ${id_ubicacion} a borrar
+
+Desactivar ubicacion
+    1. Cambiar su disabled a true
+    2. (Comprobar si su disabled == true para que no se usen los servicios aunque estén activos)
+
+Activar ubicacion
+    1. Cambiar su disabled a false
+    2. (Comprobar si su disabled == false para que se usen los servicios)
+
+Selector de APIs
+    1. Desactivar una API a nivel local de usuario
+        Cambiar la flag del servicio en el usuario == ${usuario} a false
+        Por cada servicio de cada ubicacion de ese tipo que tenga el usuario (where de usuario y tipo_servicio)
+            Cambiar la flag de disabled a true
+    2. Activar una API a nivel local de usuario
+        Cambiar la flag del servicio en el usuario == ${usuario} a true
+        Por cada servicio de cada ubicacion de ese tipo que tenga el usuario (where de usuario y tipo_servicio)
+            Cambiar la flag de disabled a false
+
+Desactivar un servicio a nivel de ubicacion (solo para esa ubicacion)
+    1. Si el selector de API de ese servicio está activo
+        Cambiar el disabled del servicio de esa ubicacion a true
+    2. Si el selector de API de ese servicio está inactivo
+        No hacer nada (no dejar que cambie)
+
+Activar un servicio a nivel de ubicacion (solo para esa ubicacion)
+    1. Si el selector de API de ese servicio está inactivo
+        Cambiar el disabled del servicio de esa ubicacion a false
+    2. Si el selector de API de ese servicio está activo
+        No hacer nada (no dejar que cambie)
+
