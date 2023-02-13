@@ -95,8 +95,10 @@ router.put('/:servid', async (req, res) => {
     }
 })
 
-// Activar o desactivar los servicios de un tipo que tiene el usuario (API selector)
-router.put('/:usu/:tipo', async (req, res) => {
+// Activar los servicios de un tipo que tiene el usuario (API selector)
+// TODO
+// Arreglar o refactor
+router.put('/apiselectorActivar/:usu/:tipo', async (req, res) => {
     const user = req.params.usu
     const tipo = req.params.tipo
     const docRef = await db
@@ -109,13 +111,11 @@ router.put('/:usu/:tipo', async (req, res) => {
         await docRef.update({
             eventos: newValue
         })
-    }
-    else if (tipo === 'noticias') {
+    } else if (tipo === 'noticias') {
         await docRef.update({
             noticias: newValue
         })
-    }
-    else if (tipo === 'tiempo') {
+    } else if (tipo === 'tiempo') {
         await docRef.update({
             tiempo: newValue
         })
@@ -124,6 +124,38 @@ router.put('/:usu/:tipo', async (req, res) => {
     res.send('Cambios selector API hechos')
 })
 
+// Desactivar los servicios de un tipo que tiene el usuario (API selector)
+// TODO
+// Arreglar
+router.put('/apiselectorDesactivar/:usu/:tipo', async (req, res) => {
+    const user = req.params.usu
+    const tipo = req.params.tipo
+    const docRef = await db
+        .collection('col4-serviciosLocalesUsuarios')
+        .doc(user)
+    const call = await docRef.get()
+    const current = call.get(`${tipo}`)
+    const newValue = !current
+    if (tipo === 'eventos') {
+        await docRef.update({
+            eventos: newValue
+        })
+    } else if (tipo === 'noticias') {
+        await docRef.update({
+            noticias: newValue
+        })
+    } else if (tipo === 'tiempo') {
+        await docRef.update({
+            tiempo: newValue
+        })
+    }
+    await actualizarServiciosUsuario(user, tipo)
+    res.send('Cambios selector API hechos')
+})
+
+
+// TODO
+// Refactor
 const actualizarServiciosUsuario = async (usuario, tipo) => {
     const colRef = await db.collection('col2-servicios')
     const query = await colRef
