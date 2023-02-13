@@ -15,9 +15,9 @@ router.post('/toponimo/:usu', async (req, res) => {
         .where('country', '==', pais)
     const call = await query.get()
     if (!call.empty) {
-        res.send('La ubicacion existe')
+        res.status(400).send('La ubicacion existe')
     } else {
-        await colRef.doc().set({
+        const ubi = {
             usuario: user,
             toponimo: sitio,
             country: pais,
@@ -25,8 +25,12 @@ router.post('/toponimo/:usu', async (req, res) => {
             lon: longitud,
             alias: '',
             disabled: false
-        })
-        res.send(`${sitio} añadido`)
+        }
+        await colRef.doc().set(ubi)
+        // Crear los servicios de esa ubicación
+        // ...
+
+        res.status(200).json({ data: ubi })
     }
 })
 
@@ -41,9 +45,9 @@ router.post('/coordenadas/:usu', async (req, res) => {
         .where('lon', '==', longitud)
     const call = await query.get()
     if (!call.empty) {
-        res.send('La ubicacion existe')
+        res.status(400).send('La ubicacion existe')
     } else {
-        await colRef.doc().set({
+        const ubi = {
             usuario: user,
             toponimo: sitio,
             country: pais,
@@ -51,8 +55,12 @@ router.post('/coordenadas/:usu', async (req, res) => {
             lon: longitud,
             alias: '',
             disabled: false
-        })
-        res.send(`${sitio} añadido`)
+        }
+        await colRef.doc().set(ubi)
+        // Crear los servicios de esa ubicación
+        // ...
+
+        res.status(200).json({ data: ubi })
     }
 })
 
@@ -63,10 +71,16 @@ router.delete('/:ubiid', async (req, res) => {
     const docRef = await colRef.doc(id)
     const call = await docRef.get()
     if (!call.exists) {
-        res.send('La ubicacion no existe')
+        res.status(400).send('La ubicacion no existe')
     } else {
+        const ubi = {
+            id: call.id, data: call.data()
+        }
         await docRef.delete()
-        res.send(`${id} borrado`)
+        // Borrar los servicios cuyo id_ubicacion coincidan en la colección de servicios
+        // ...
+
+        res.status(200).json({ data: ubi })
     }
 })
 
@@ -78,12 +92,12 @@ router.put('/alias/:ubiid', async (req, res) => {
     const docRef = await colRef.doc(id)
     const call = await docRef.get()
     if (!call.exists) {
-        res.send('La ubicacion no existe')
+        res.status(400).send('La ubicacion no existe')
     } else {
         await docRef.update({
             alias: nuevoAlias
         })
-        res.send(`Alias actualizado. Nuevo alias: ${nuevoAlias}`)
+        res.status(200).json({ data: { id: call.id, data: call.data() } })
     }
 })
 
@@ -94,15 +108,15 @@ router.put('/activar/:ubiid', async (req, res) => {
     const docRef = await colRef.doc(id)
     const call = await docRef.get()
     if (!call.exists) {
-        res.send('La ubicacion no existe')
+        res.status(400).send('La ubicacion no existe')
     } else {
         if (call.data().disabled) {
             await docRef.update({
                 disabled: false
             })
-            res.send('Ubicación activada')
+            res.status(200).json({ data: { id: call.id, data: call.data() } })
         } else {
-            res.send('La ubicación ya está activa')
+            res.status(400).send('La ubicación ya está activa')
         }
     }
 })
@@ -114,36 +128,29 @@ router.put('/desactivar/:ubiid', async (req, res) => {
     const docRef = await colRef.doc(id)
     const call = await docRef.get()
     if (!call.exists) {
-        res.send('La ubicacion no existe')
+        res.status(400).send('La ubicacion no existe')
     } else {
         if (!call.data().disabled) {
             await docRef.update({
                 disabled: true
             })
-            res.send('Ubicación desactivada')
+            res.status(200).json({ data: { id: call.id, data: call.data() } })
         } else {
-            res.send('La ubicación ya está inactiva')
+            res.status(400).send('La ubicación ya está inactiva')
         }
     }
 })
 
-// Obtener ubicaciones que estén activas o inactivas
-// Si estado == true: consulta inactivas
-// Si estado == false: consulta activas
-router.get('/:usuario/:estadesactivado', async (req, res) => {
+// Obtener ubicaciones que estén activas
+router.get('/activas/:usuario', async (req, res) => {
     const user = req.params.usuario
-    const disabled = req.params.estadesactivado
     const colRef = await db.collection('col1-ubicaciones')
     const query = await colRef
         .where('usuario', '==', user)
-        .where('disabled', '==', disabled)
+        .where('disabled', '==', false)
     const call = await query.get()
     if (call.empty) {
-        if (disabled) {
-            res.send('No hay ubicaciones inactivas')
-        } else {
-            res.send('No hay ubicaciones activas')
-        }
+        res.status(400).send('No hay ubicaciones activas')
     } else {
         let array = []
         call.forEach((doc) => {
@@ -151,18 +158,39 @@ router.get('/:usuario/:estadesactivado', async (req, res) => {
             const data = doc.data()
             array.push({ id, data })
         })
-        res.send({ array })
+        res.status(200).send({ array })
+    }
+})
+
+// Obtener ubicaciones que estén inactivas
+router.get('/inactivas/:usuario', async (req, res) => {
+    const user = req.params.usuario
+    const colRef = await db.collection('col1-ubicaciones')
+    const query = await colRef
+        .where('usuario', '==', user)
+        .where('disabled', '==', true)
+    const call = await query.get()
+    if (call.empty) {
+        res.status(400).send('No hay ubicaciones inactivas')
+    } else {
+        let array = []
+        call.forEach((doc) => {
+            const id = doc.id
+            const data = doc.data()
+            array.push({ id, data })
+        })
+        res.status(200).send({ array })
     }
 })
 
 // Ver mis ubicaciones
-router.get('/consultaTodas/:usuario', async (req, res) => {
+router.get('/:usuario', async (req, res) => {
     const user = req.params.usuario
     const colRef = await db.collection('col1-ubicaciones')
     const query = await colRef.where('usuario', '==', user)
     const call = await query.get()
     if (call.empty) {
-        res.send(`El usuario ${user} no tiene ubicaciones`)
+        res.status(400).send(`El usuario ${user} no tiene ubicaciones`)
     } else {
         let array = []
         call.forEach((doc) => {
@@ -170,23 +198,23 @@ router.get('/consultaTodas/:usuario', async (req, res) => {
             const data = doc.data()
             array.push({ id, data })
         })
-        res.send({ array })
+        res.status(200).send({ array })
     }
 })
 
 // Ver una ubicacion
-router.get('/consultaUna/:ubiid', async (req, res) => {
+router.get('/veruna/:ubiid', async (req, res) => {
     // const user = req.params.usu
     const id = req.params.ubiid
     const colRef = await db.collection('col1-ubicaciones')
     const docRef = await colRef.doc(id)
     const call = await docRef.get()
     if (!call.exists) {
-        res.send('La ubicacion no existe')
+        res.status(400).send('La ubicacion no existe')
     } else {
         const retrieveId = call.id
         const retrieveData = call.data()
-        res.send({ retrieveId, retrieveData })
+        res.status(200).json({ data: { id: retrieveId, data: retrieveData } })
     }
 })
 
