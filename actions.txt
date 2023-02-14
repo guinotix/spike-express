@@ -2,38 +2,35 @@ Initial state
 - servicios globales creados
 
 
-[A] Crear un usuario
+[A] Crear un usuario (funciona)
     1. Añadir el usuario a la autenticación
     2. Crear los servicios locales del usuario
         Crear un doc en servicio local de ${usuario} (col4)
         Por cada servicio global,
             Crear un field inicializado a true
 
-[B] Borrar un usuario
+[B] Borrar un usuario (funciona)
     1. Borrar los servicios del usuario == ${usuario}
     2. Borrar las ubicaciones del usuario == ${usuario}
     3. Borrar doc ${usuario} de servicios locales
 
-[C] Alta ubicacion (ya sea por toponimo o coordenadas)
+[C] Alta ubicacion (ya sea por toponimo o coordenadas) (funciona)
     1. Añadir la ubicacion a su colección correspondiente
     2. Por cada servicio local:
         Crear un servicio asociado en colección servicios con ${usuario}-${ubicacion}-${tipo_servicio}
         Inicializar disabled (con el valor que haya en local del usuario)
 
-[D] Baja ubicacion (eliminarla)
+[D] Baja ubicacion (eliminarla) (funciona)
     1. Borrar la ubicacion
     2. Borrar los servicios cuyo id_ubicacion == ${id_ubicacion} a borrar
 
-[E] Desactivar ubicacion
+[E] Desactivar ubicacion (funciona)
     1. Cambiar su disabled a true
     2. (Comprobar si su disabled == true para que no se usen los servicios aunque estén activos)
 
-[F] Activar ubicacion
+[F] Activar ubicacion (funciona)
     1. Cambiar su disabled a false
     2. (Comprobar si su disabled == false para que se usen los servicios)
-
-(Las funciones de arriba funcionan menos los servicios)
-(Las de abajo todavía no)
 
 [G] Selector de APIs
     1. Desactivar una API a nivel local de usuario
@@ -45,15 +42,20 @@ Initial state
         Por cada servicio de cada ubicacion de ese tipo que tenga el usuario (where de usuario y tipo_servicio)
             Cambiar la flag de disabled a false
 
-[H] Desactivar un servicio a nivel de ubicacion (solo para esa ubicacion)
+[H] Desactivar un servicio a nivel de ubicacion (solo para esa ubicacion) (funciona)
     1. Si el selector de API de ese servicio está activo
         Cambiar el disabled del servicio de esa ubicacion a true
     2. Si el selector de API de ese servicio está inactivo
         No hacer nada (no dejar que cambie)
 
-[I] Activar un servicio a nivel de ubicacion (solo para esa ubicacion)
+[I] Activar un servicio a nivel de ubicacion (solo para esa ubicacion) (funciona)
     1. Si el selector de API de ese servicio está inactivo
         Cambiar el disabled del servicio de esa ubicacion a false
     2. Si el selector de API de ese servicio está activo
         No hacer nada (no dejar que cambie)
 
+
+Tareas pendientes:
+ - Acabar los métodos PUT en las rutas para el selector de API y activaciones/desactivaciones manuales de servicios
+ - Revisar en las operaciones manuales el estado del selector para permitir la activación/desactivación
+ - Revisar los valores de respuesta de los métodos (coordinar con Sergi)
