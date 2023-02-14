@@ -2,6 +2,7 @@ const { Router } = require('express')
 const router = Router();
 
 const { db } = require('../firebase')
+const { crearServicioEnUbicacion, borrarTodosServiciosDeUbicacion } = require("../logicaServicios");
 
 
 // Añadir ubicacion por toponimo
@@ -26,11 +27,15 @@ router.post('/toponimo/:usu', async (req, res) => {
             alias: '',
             disabled: false
         }
-        await colRef.doc().set(ubi)
-        // Crear los servicios de esa ubicación
-        // ...
+        const docRef = await colRef.doc()
+        await docRef.set(ubi)
 
-        res.status(200).json({ data: ubi })
+        // Crear los servicios de esa ubicación
+        await crearServicioEnUbicacion(user, docRef.id, 'eventos')
+        await crearServicioEnUbicacion(user, docRef.id, 'noticias')
+        await crearServicioEnUbicacion(user, docRef.id, 'tiempo')
+
+        res.status(200).json({ id: docRef.id ,data: ubi })
     }
 })
 
@@ -56,9 +61,13 @@ router.post('/coordenadas/:usu', async (req, res) => {
             alias: '',
             disabled: false
         }
-        await colRef.doc().set(ubi)
+        const docRef = await colRef.doc()
+        await docRef.set(ubi)
+
         // Crear los servicios de esa ubicación
-        // ...
+        await crearServicioEnUbicacion(user, docRef.id, 'eventos')
+        await crearServicioEnUbicacion(user, docRef.id, 'noticias')
+        await crearServicioEnUbicacion(user, docRef.id, 'tiempo')
 
         res.status(200).json({ data: ubi })
     }
@@ -77,8 +86,9 @@ router.delete('/:ubiid', async (req, res) => {
             id: call.id, data: call.data()
         }
         await docRef.delete()
+
         // Borrar los servicios cuyo id_ubicacion coincidan en la colección de servicios
-        // ...
+        await borrarTodosServiciosDeUbicacion(id)
 
         res.status(200).json({ data: ubi })
     }
