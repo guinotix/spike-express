@@ -39,10 +39,6 @@ const eliminarServiciosLocalesUsuario = async (usuario) => {
 // [I]
 // FUNCIONA
 const activarServicioDeUbicacion = async (usuario, ubicacion, servicio) => {
-    // Comprobar que si quiero activar, el selector esté activo
-    // TODO
-    // ...
-
     const colRef = await db.collection('col2-servicios')
     const query = await colRef
         .where('usuario', '==', usuario)
@@ -66,10 +62,6 @@ const activarServicioDeUbicacion = async (usuario, ubicacion, servicio) => {
 // [H]
 // FUNCIONA
 const desactivarServicioDeUbicacion = async (usuario, ubicacion, servicio) => {
-    // Comprobar que si quiero desactivar, el selector esté activo
-    // TODO
-    // ...
-
     const colRef = await db.collection('col2-servicios')
     const query = await colRef
         .where('usuario', '==', usuario)
@@ -210,6 +202,23 @@ const borrarTodosServiciosDeUbicacion = async (ubicacion) => {
     }
 }
 
+// Ver el estado actual del servicio en una ubicacion
+const verEstadoServicioEnUbicacion = async (ubicacion, servicio) => {
+    const colRef = await db.collection('col2-servicios')
+    const query = await colRef
+        .where('id_ubicacion', '==', ubicacion)
+        .where('tipo_servicio', '==', servicio)
+    const call = await query.get()
+    if (!call.empty) {
+        let estadoActual
+        call.forEach((doc) => {
+            estadoActual = doc.get('disabled')
+        })
+        return !estadoActual
+    }
+    return null
+}
+
 
 module.exports = {
     crearServiciosLocalesUsuario,
@@ -219,5 +228,6 @@ module.exports = {
     activarAPIdelSelector,
     desactivarAPIdelSelector,
     crearServicioEnUbicacion,
-    borrarTodosServiciosDeUbicacion
+    borrarTodosServiciosDeUbicacion,
+    verEstadoServicioEnUbicacion
 }
