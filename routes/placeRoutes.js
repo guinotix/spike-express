@@ -35,7 +35,7 @@ router.post('/toponimo/:usu', async (req, res) => {
         await crearServicioEnUbicacion(user, docRef.id, 'noticias')
         await crearServicioEnUbicacion(user, docRef.id, 'tiempo')
 
-        res.status(200).json({ id: docRef.id ,data: ubi })
+        res.status(200).json({ id: docRef.id, data: ubi })
     }
 })
 
@@ -69,7 +69,7 @@ router.post('/coordenadas/:usu', async (req, res) => {
         await crearServicioEnUbicacion(user, docRef.id, 'noticias')
         await crearServicioEnUbicacion(user, docRef.id, 'tiempo')
 
-        res.status(200).json({ data: ubi })
+        res.status(200).json({ id: docRef.id, data: ubi })
     }
 })
 
@@ -90,7 +90,7 @@ router.delete('/:ubiid', async (req, res) => {
         // Borrar los servicios cuyo id_ubicacion coincidan en la colección de servicios
         await borrarTodosServiciosDeUbicacion(id)
 
-        res.status(200).json({ data: ubi })
+        res.status(200).json({ id: docRef.id, data: ubi })
     }
 })
 
@@ -107,7 +107,7 @@ router.put('/alias/:ubiid', async (req, res) => {
         await docRef.update({
             alias: nuevoAlias
         })
-        res.status(200).json({ data: { id: call.id, data: call.data() } })
+        res.status(200).json({ id: call.id, data: call.data() })
     }
 })
 
@@ -124,7 +124,7 @@ router.put('/activar/:ubiid', async (req, res) => {
             await docRef.update({
                 disabled: false
             })
-            res.status(200).json({ data: { id: call.id, data: call.data() } })
+            res.status(200).json({ id: call.id, data: call.data() })
         } else {
             res.status(400).send('La ubicación ya está activa')
         }
@@ -144,7 +144,7 @@ router.put('/desactivar/:ubiid', async (req, res) => {
             await docRef.update({
                 disabled: true
             })
-            res.status(200).json({ data: { id: call.id, data: call.data() } })
+            res.status(200).json({ id: call.id, data: call.data() })
         } else {
             res.status(400).send('La ubicación ya está inactiva')
         }
@@ -222,9 +222,7 @@ router.get('/veruna/:ubiid', async (req, res) => {
     if (!call.exists) {
         res.status(400).send('La ubicacion no existe')
     } else {
-        const retrieveId = call.id
-        const retrieveData = call.data()
-        res.status(200).json({ data: { id: retrieveId, data: retrieveData } })
+        res.status(200).json({ id: call.id, data: call.data() })
     }
 })
 
