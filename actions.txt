@@ -32,7 +32,7 @@ Initial state
     1. Cambiar su disabled a false
     2. (Comprobar si su disabled == false para que se usen los servicios)
 
-[G] Selector de APIs
+[G] Selector de APIs (funciona)
     1. Desactivar una API a nivel local de usuario
         Cambiar la flag del servicio en el usuario == ${usuario} a false
         Por cada servicio de cada ubicacion de ese tipo que tenga el usuario (where de usuario y tipo_servicio)
@@ -56,6 +56,5 @@ Initial state
 
 
 Tareas pendientes:
- - Acabar los métodos PUT en las rutas para el selector de API y activaciones/desactivaciones manuales de servicios
  - Revisar en las operaciones manuales el estado del selector para permitir la activación/desactivación
  - Revisar los valores de respuesta de los métodos (coordinar con Sergi)
