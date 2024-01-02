@@ -1,0 +1,19 @@
+### Get all products
+GET http://localhost:3000/products
+
+### Get a product by id
+GET http://localhost:3000/products/733R7Yy0sjevw8vqonyU
+
+### Create a product
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+    "name": "test2",
+    "description": "the second one to test",
+    "price": 1500,
+    "quantity": 10
+}
+
+### Delete a product
+DELETE http://localhost:3000/products/n1agXFc8y4Z5m8l4ZCS4

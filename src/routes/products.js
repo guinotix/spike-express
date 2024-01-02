@@ -1,42 +1,73 @@
 const express = require('express')
 const products = express.Router()
 
+const { db } = require('../../firebase')
+
 // GET all
-products.get("/", (req, res) => {
-    res.send("GET method of products");
+products.get("/", async (req, res) => {
+    // res.send("GET method of products");
+    try {
+        const result = await db.collection('products').get()
+        const tests = result.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+        }))
+        res.json(tests)
+    } catch (error) {
+        res.status(500).send(error)
+    }
 })
 
 // GET one
-products.get("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    res.send(`GET method of product ${id}`);
+products.get("/:id", async (req, res) => {
+    try {
+        const id = req.params.id
+        const doc = await db.collection('products').doc(id).get()
+        res.json({ id, ...doc.data() })
+    } catch (error) {
+        res.status(404).send(error)
+    }
 })
 
 // POST a product
-products.post("/", (req, res) => {
-    const product = req.body;
-
-    // Return a response with code 200 (product added and all the data in a json format in the body)
-    res.status(200).json(product);
+products.post("/", async (req, res) => {
+    const { name, description, price, quantity } = req.body;
+    try {
+        const colRef = await db.collection('products')
+        const docRef = await colRef.doc()
+        await docRef.set({ name, description, price, quantity })
+        res.json({ id: docRef.id, ...req.body })
+    } catch (error) {
+        res.status(500).send(error)
+    }
 })
 
 // PUT a product (update)
-products.put("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const product = req.body;
-
-    // Return a repsonse with code 200 and the updated product
-    res.status(200).json(product);
+products.put("/:id", async (req, res) => {
+    const id = req.params.id
+    const { name, description, price, quantity } = req.body;
+    try {
+        const colRef = await db.collection('products')
+        const docRef = await colRef.doc(id)
+        await docRef.update({ name, description, price, quantity })
+        res.json({ id: docRef.id, ...req.body })
+    } catch (error) {
+        res.status(500).send(error)
+    }
 })
 
 // DELETE a product
-products.delete("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-
-    // findProduct(id)
-    // ...
-
-    res.status(200).json(`DELETE method of the product ${id}`);
+products.delete("/:id", async (req, res) => {
+    const id = req.params.id
+    try {
+        const colRef = await db.collection('products')
+        const docRef = await colRef.doc(id)
+        const doc = await docRef.get()
+        await docRef.delete()
+        res.json({ id: id, ...doc.data() })
+    } catch (error) {
+        res.status(500).send(error)
+    }
 })
 
 module.exports = products;
